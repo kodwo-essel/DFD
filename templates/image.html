@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Xionite DeepFake Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <div class="background-wrapper">
+        <div class="background-overlay"></div>
+            <div id="root">
+                <div class="navbar">
+                <a href="{{ url_for('homepage') }}" class="navbar-brand">XIONITE</a>
+
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation menu">
+                    <div class="hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </button>
+
+                <div class="navbar-nav" id="navbarNav">
+                    <a href="{{ url_for('detect') }}" class="nav-link">Detect Video</a>
+                    <a href="{{ url_for('detect') }}" class="nav-link active">Detect Image</a>
+                    <a href="{{ url_for('logout') }}" class="nav-link" id="logoutLink">Logout</a>
+                </div>
+                </div>
+
+                <div class="content" role="main">
+                    <h1 class="heading">Detect DeepFake Image</h1>
+                    <p class="para">Upload your image for AI-powered analysis to detect potential manipulation.</p>
+
+
+                    <section class="upload-section" aria-labelledby="upload-heading">
+                        <h2 id="upload-heading" class="visually-hidden">Upload an Image</h2>
+                            <form action="/image-detect" method="post" enctype="multipart/form-data" class="feature-card" id="upload-form">
+                                <div class="upload-container">
+                                    <div class="file-input-wrapper">
+                                        <input type="file" id="fileUpload" style="margin: 20px;" name="image" accept="image/*" required onchange="previewImage(event)">
+                                        <label for="fileUpload" class="file-label">Choose Photo</label>
+                                    </div>
+                                    <div id="image-preview-container" style="display: none;" aria-live="polite">
+                                        <img id="preview" class="image-preview" style="max-width: 100%; height: auto; margin: auto; display: block;">
+                                    </div>
+                                    <div class="loading-container" style="display: none;">
+                                        <div class="loading-spinner"></div>
+                                        <p class="loading-text">Analyzing Photo...</p>
+                                    </div>
+                                    {% if error %}
+                                    <div id="error-message" class="error-message" role="alert" style="display: none;"></div>
+                                    {% endif %}
+                                    
+                                    <button class="cta-button" id="analyze-btn" type="submit">Analyze Photo</button>
+                                </div>   
+                            </form>
+
+                            {% if output %}
+                            <div class="result">
+                                <p>Prediction: <strong>{{ output }}</strong></p>
+                                <p>Confidence: <strong>{{ confidence }}%</strong></p>
+                            </div>
+                            {% endif %}
+                            {% if error %}
+                            <p class="error">{{ error }}</p>
+                            {% endif %}
+                    </section>
+                </div>
+            </div>
+
+    
+    </div>
+
+
+    <script>
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('preview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+
+                    // Show the container now
+                    const container = document.getElementById('image-preview-container');
+                    container.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Mobile menu toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const navbarNav = document.getElementById('navbarNav');
+
+            if (mobileMenuBtn && navbarNav) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    // Toggle active class on button for hamburger animation
+                    mobileMenuBtn.classList.toggle('active');
+
+                    // Toggle active class on nav menu
+                    navbarNav.classList.toggle('active');
+                });
+
+                // Close menu when clicking on nav links (for smooth UX)
+                const navLinks = navbarNav.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        mobileMenuBtn.classList.remove('active');
+                        navbarNav.classList.remove('active');
+                    });
+                });
+
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    const isClickInsideNav = navbarNav.contains(event.target);
+                    const isClickOnMenuBtn = mobileMenuBtn.contains(event.target);
+
+                    if (!isClickInsideNav && !isClickOnMenuBtn && navbarNav.classList.contains('active')) {
+                        mobileMenuBtn.classList.remove('active');
+                        navbarNav.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
+
+
+
+</body>
+</html>
