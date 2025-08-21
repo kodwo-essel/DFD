@@ -72,6 +72,9 @@ video_path = ""
 detectOutput = []
 
 app = Flask("__main__", template_folder="templates", static_folder="static")
+
+application = app
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max file size
 app.config['SECRET_KEY'] = 'your-secret-key-here'  # Change this to a secure secret key
