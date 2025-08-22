@@ -57,6 +57,8 @@ FRAMES_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static
 GRAPHS_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'graphs')
 DATASET_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Admin', 'datasets')
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Create the folders if they don't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(FRAMES_FOLDER, exist_ok=True)
@@ -502,8 +504,17 @@ def detectFakeVideo(videoPath):
         video_dataset = validation_dataset(path_to_videos, sequence_length=20, transform=train_transforms)
         model = Model(2)
 
-        # Download and load model from Hugging Face Hub
-        model_path = hf_hub_download(repo_id="imtiyaz123/DF_Model", filename="df_model.pt")
+        # # Download and load model from Hugging Face Hub
+        # model_path = hf_hub_download(repo_id="imtiyaz123/DF_Model", filename="df_model.pt")
+        # model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+        # model.eval()
+        model_path = os.path.join(BASE_DIR, "static", "model", "df_model.pt")
+
+
+        # Initialize your model class
+        model = DFModel()
+
+        # Load the weights from the uploaded file
         model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
         model.eval()
         
@@ -663,30 +674,42 @@ def terms():
 class DFModel(torch.nn.Module):
     def __init__(self, num_classes=2, latent_dim=2048, lstm_layers=1, hidden_dim=2048, bidirectional=False):
         super(DFModel, self).__init__()
-        model = models.resnext50_32x4d(pretrained=True)  # Ensure same base model
+        model = models.resnext50_32x4d(pretrained=True)
         self.model = torch.nn.Sequential(*list(model.children())[:-2])
         self.lstm = torch.nn.LSTM(latent_dim, hidden_dim, lstm_layers, bidirectional)
-        self.linear1 = torch.nn.Linear(2048, num_classes)
+        self.linear1 = torch.nn.Linear(latent_dim, num_classes)
         self.avgpool = torch.nn.AdaptiveAvgPool2d(1)
         self.dp = torch.nn.Dropout(0.4)
 
     def forward(self, x):
-       # Assuming 'x' is 4D, e.g., [batch_size, channels, height, width]
-        x = x.unsqueeze(1)  # Adding sequence length dimension (1 for single image)
+        # Handle both single image (4D) and video sequence (5D)
+        if x.dim() == 4:
+            # [batch_size, c, h, w] -> add sequence dimension
+            x = x.unsqueeze(1)  # becomes [batch_size, seq_length=1, c, h, w]
         batch_size, seq_length, c, h, w = x.shape
         x = x.view(batch_size * seq_length, c, h, w)
         fmap = self.model(x)
         x = self.avgpool(fmap)
-        x = x.view(batch_size, seq_length, 2048)
+        x = x.view(batch_size, seq_length, -1)
         x_lstm, _ = self.lstm(x, None)
-        return fmap, self.dp(self.linear1(x_lstm[:, -1, :]))
+        logits = self.dp(self.linear1(x_lstm[:, -1, :]))
+        return fmap, logits
 
 
-# ✅ Load model from Hugging Face
-model_path = hf_hub_download(repo_id="imtiyaz123/DF_Model", filename="df_model.pt")
 
-# ✅ Initialize model and load weights properly
+# # ✅ Load model from Hugging Face
+# model_path = hf_hub_download(repo_id="imtiyaz123/DF_Model", filename="df_model.pt")
+
+# # ✅ Initialize model and load weights properly
+# model = DFModel()
+# model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+# model.eval()
+model_path = os.path.join(BASE_DIR, "static", "model", "df_model.pt")
+
+# Initialize your model class
 model = DFModel()
+
+# Load the weights from the uploaded file
 model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 model.eval()
 
