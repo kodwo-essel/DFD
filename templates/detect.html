@@ -26,7 +26,9 @@
         
         <div id="root">
             <nav class="navbar">
-                <a href="{{ url_for('homepage') }}" class="navbar-brand">XIONITE</a>
+                <a href="{{ url_for('homepage') }}" class="navbar-brand">
+                    <img src="{{ url_for('static', filename='js/logo.png') }}" alt="" style="width: 120px; height: auto;">
+                </a>
 
                 <!-- Mobile Menu Button -->
                 <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation menu">
