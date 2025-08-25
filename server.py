@@ -502,13 +502,13 @@ def detectFakeVideo(videoPath):
         
         path_to_videos = [videoPath]
         video_dataset = validation_dataset(path_to_videos, sequence_length=20, transform=train_transforms)
-        model = Model(2)
+        # model = Model(2)
 
         # # Download and load model from Hugging Face Hub
-        # model_path = hf_hub_download(repo_id="imtiyaz123/DF_Model", filename="df_model.pt")
+        model_path = hf_hub_download(repo_id="imtiyaz123/DF_Model", filename="df_model.pt")
         # model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
         # model.eval()
-        model_path = os.path.join(BASE_DIR, "static", "model", "df_model.pt")
+        # model_path = os.path.join(BASE_DIR, "static", "model", "df_model.pt")
 
 
         # Initialize your model class
@@ -698,13 +698,13 @@ class DFModel(torch.nn.Module):
 
 
 # # ✅ Load model from Hugging Face
-# model_path = hf_hub_download(repo_id="imtiyaz123/DF_Model", filename="df_model.pt")
+model_path = hf_hub_download(repo_id="imtiyaz123/DF_Model", filename="df_model.pt")
 
 # # ✅ Initialize model and load weights properly
 # model = DFModel()
 # model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 # model.eval()
-model_path = os.path.join(BASE_DIR, "static", "model", "df_model.pt")
+# model_path = os.path.join(BASE_DIR, "static", "model", "df_model.pt")
 
 # Initialize your model class
 model = DFModel()
